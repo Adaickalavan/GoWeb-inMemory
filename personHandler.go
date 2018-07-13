@@ -13,22 +13,25 @@ type Person struct {
 	Occupation string `json:"occupation"`
 }
 
+// This variable will act as our in-memory database. Note that any additional
+// data entered in a web session will be erased when the server is restarted.
 var personList []Person
 
 func getPersonHandler(w http.ResponseWriter, r *http.Request) {
-	// Convert the "persons" variable to json
+	// Convert the `personList` variable to JSON
 	personListBytes, err := json.Marshal(personList)
 	if err != nil {
 		fmt.Println(fmt.Errorf("Error: %v", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	// Write JSON list of persons to response
 	w.Write(personListBytes)
 }
 
 func createPersonHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the HTML form data
+	// Parse the HTML form data received in the request
 	err := r.ParseForm()
 	if err != nil {
 		fmt.Println(fmt.Errorf("Error: %v", err))
@@ -36,15 +39,15 @@ func createPersonHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get the information about the person from the form info
+	// Extract the field information about the person from the form info
 	person := Person{}
 	person.Nama = r.Form.Get("nama")
 	person.Birthday = r.Form.Get("birthday")
 	person.Occupation = r.Form.Get("occupation")
 
-	// Append our existing list of persons with a new entry
+	// Append our existing in-memory database with a the newly received person
 	personList = append(personList, person)
 
-	//Redirect to the original HTML page
+	//Redirect to the originating HTML page
 	http.Redirect(w, r, "/", http.StatusFound)
 }
